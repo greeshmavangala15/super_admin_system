@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import type { User } from "../../types/user.types";
+import type {
+  User,
+  UserRole,
+} from "../../types/user.types";
 
 interface UserFormProps {
   user?: User;
@@ -19,27 +22,29 @@ function UserForm({
   onSubmit,
   onClose,
 }: UserFormProps) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState<
-    "admin" | "moderator" | "user"
-  >("user");
+  const [firstName, setFirstName] =
+    useState(user?.firstName ?? "");
 
-  useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName);
-      setLastName(user.lastName);
-      setEmail(user.email);
-      setPhone(user.phone);
-      setUsername(user.username);
-      setRole(user.role);
-    }
-  }, [user]);
+  const [lastName, setLastName] =
+    useState(user?.lastName ?? "");
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const [email, setEmail] =
+    useState(user?.email ?? "");
+
+  const [phone, setPhone] =
+    useState(user?.phone ?? "");
+
+  const [username, setUsername] =
+    useState(user?.username ?? "");
+
+  const [role, setRole] =
+    useState<UserRole>(
+      user?.role ?? "user"
+    );
+
+  const handleSubmit = (
+    event: React.FormEvent
+  ) => {
     event.preventDefault();
 
     onSubmit({
@@ -54,9 +59,11 @@ function UserForm({
 
   return (
     <div className="modal-overlay">
+
       <div className="user-form-modal">
 
         <div className="modal-header">
+
           <div>
             <h2>
               {mode === "add"
@@ -78,6 +85,7 @@ function UserForm({
           >
             ×
           </button>
+
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -85,79 +93,109 @@ function UserForm({
           <div className="form-grid">
 
             <div className="form-field">
-              <label>First Name</label>
+              <label>
+                First Name
+              </label>
+
               <input
                 value={firstName}
-                onChange={(e) =>
-                  setFirstName(e.target.value)
+                onChange={(event) =>
+                  setFirstName(
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
             <div className="form-field">
-              <label>Last Name</label>
+              <label>
+                Last Name
+              </label>
+
               <input
                 value={lastName}
-                onChange={(e) =>
-                  setLastName(e.target.value)
+                onChange={(event) =>
+                  setLastName(
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
             <div className="form-field">
-              <label>Email</label>
+              <label>
+                Email
+              </label>
+
               <input
                 type="email"
                 value={email}
-                onChange={(e) =>
-                  setEmail(e.target.value)
+                onChange={(event) =>
+                  setEmail(
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
             <div className="form-field">
-              <label>Phone</label>
+              <label>
+                Phone
+              </label>
+
               <input
                 value={phone}
-                onChange={(e) =>
-                  setPhone(e.target.value)
+                onChange={(event) =>
+                  setPhone(
+                    event.target.value
+                  )
                 }
               />
             </div>
 
             <div className="form-field">
-              <label>Username</label>
+              <label>
+                Username
+              </label>
+
               <input
                 value={username}
-                onChange={(e) =>
-                  setUsername(e.target.value)
+                onChange={(event) =>
+                  setUsername(
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
             <div className="form-field">
-              <label>Role</label>
+              <label>
+                Role
+              </label>
 
               <select
                 value={role}
-                onChange={(e) =>
+                onChange={(event) =>
                   setRole(
-                    e.target.value as
-                      | "admin"
-                      | "moderator"
-                      | "user"
+                    event.target.value as UserRole
                   )
                 }
               >
-                <option value="user">User</option>
+                <option value="user">
+                  User
+                </option>
+
                 <option value="moderator">
                   Moderator
                 </option>
-                <option value="admin">Admin</option>
+
+                <option value="admin">
+                  Admin
+                </option>
               </select>
             </div>
 
@@ -170,6 +208,7 @@ function UserForm({
           )}
 
           <div className="form-actions">
+
             <button
               type="button"
               className="cancel-button"
@@ -189,10 +228,13 @@ function UserForm({
                 ? "Create User"
                 : "Update User"}
             </button>
+
           </div>
 
         </form>
+
       </div>
+
     </div>
   );
 }

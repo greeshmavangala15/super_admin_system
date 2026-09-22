@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   useQuery,
@@ -66,14 +66,6 @@ function UsersPage() {
   const updateMutation =
     useUpdateUser();
 
-  useEffect(() => {
-    setPage(1);
-  }, [
-    debouncedSearch,
-    role,
-    status,
-  ]);
-
   const usersQuery = useQuery(
     usersQueryOptions({
       search: debouncedSearch,
@@ -83,6 +75,26 @@ function UsersPage() {
     })
   );
 
+  const handleSearchChange = (
+    value: string
+  ) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const handleRoleChange = (
+    value: string
+  ) => {
+    setRole(value);
+    setPage(1);
+  };
+
+  const handleStatusChange = (
+    value: string
+  ) => {
+    setStatus(value);
+    setPage(1);
+  };
 
   const handleUserHover = (
     userId: number
@@ -91,7 +103,6 @@ function UsersPage() {
       userDetailsQueryOptions(userId)
     );
   };
-
 
   const handleCreateUser = (
     user: Partial<User>
@@ -102,7 +113,6 @@ function UsersPage() {
       },
     });
   };
-
 
   const handleDeleteUser = (
     userId: number
@@ -119,7 +129,6 @@ function UsersPage() {
     deleteMutation.mutate(userId);
   };
 
-
   const handleUpdateUser = (
     data: Partial<User>
   ) => {
@@ -134,21 +143,17 @@ function UsersPage() {
       },
       {
         onSuccess: () => {
-          setEditingUser(
-            undefined
-          );
+          setEditingUser(undefined);
         },
       }
     );
   };
-
 
   const handleEditUser = (
     user: User
   ) => {
     setEditingUser(user);
   };
-
 
   const handleReset = () => {
     setSearch("");
@@ -157,14 +162,11 @@ function UsersPage() {
     setPage(1);
   };
 
-
-
   if (usersQuery.isLoading) {
     return (
       <Loader message="Loading users..." />
     );
   }
-
 
   if (usersQuery.isError) {
     return (
@@ -181,13 +183,14 @@ function UsersPage() {
 
   if (!data) {
     return (
-      <EmptyState message="No user data available." />
+      <EmptyState
+        message="No user data available."
+      />
     );
   }
 
   return (
     <main className="users-page">
-
 
       <div className="page-header">
 
@@ -242,18 +245,24 @@ function UsersPage() {
         search={search}
         role={role}
         status={status}
-        onSearchChange={setSearch}
-        onRoleChange={setRole}
-        onStatusChange={setStatus}
+        onSearchChange={
+          handleSearchChange
+        }
+        onRoleChange={
+          handleRoleChange
+        }
+        onStatusChange={
+          handleStatusChange
+        }
         onReset={handleReset}
       />
 
-
       {data.users.length === 0 ? (
-        <EmptyState message="No users found." />
+        <EmptyState
+          message="No users found."
+        />
       ) : (
         <>
-
           <UserTable
             users={data.users}
             onUserHover={
@@ -276,13 +285,12 @@ function UsersPage() {
               setPage
             }
           />
-
         </>
       )}
 
-
       {showForm && (
         <UserForm
+          key="add-user"
           mode="add"
           isPending={
             createMutation.isPending
@@ -304,9 +312,9 @@ function UsersPage() {
         />
       )}
 
-
       {editingUser && (
         <UserForm
+          key={editingUser.id}
           mode="edit"
           user={editingUser}
           isPending={

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import type {
   Tenant,
@@ -11,9 +11,7 @@ interface TenantFormProps {
   mode: "add" | "edit";
   isPending: boolean;
   error?: string;
-  onSubmit: (
-    data: Partial<Tenant>
-  ) => void;
+  onSubmit: (data: Partial<Tenant>) => void;
   onClose: () => void;
 }
 
@@ -25,30 +23,27 @@ function TenantForm({
   onSubmit,
   onClose,
 }: TenantFormProps) {
-  const [name, setName] =
-    useState("");
+  const [name, setName] = useState(
+    tenant?.name ?? ""
+  );
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState(
+    tenant?.email ?? ""
+  );
 
-  const [phone, setPhone] =
-    useState("");
+  const [phone, setPhone] = useState(
+    tenant?.phone ?? ""
+  );
 
   const [plan, setPlan] =
-    useState<TenantPlan>("Standard");
+    useState<TenantPlan>(
+      tenant?.plan ?? "Standard"
+    );
 
   const [status, setStatus] =
-    useState<TenantStatus>("active");
-
-  useEffect(() => {
-    if (tenant) {
-      setName(tenant.name);
-      setEmail(tenant.email);
-      setPhone(tenant.phone);
-      setPlan(tenant.plan);
-      setStatus(tenant.status);
-    }
-  }, [tenant]);
+    useState<TenantStatus>(
+      tenant?.status ?? "active"
+    );
 
   const handleSubmit = (
     event: React.FormEvent
@@ -66,11 +61,9 @@ function TenantForm({
 
   return (
     <div className="modal-overlay">
-
       <div className="tenant-form-modal">
 
         <div className="modal-header">
-
           <div>
             <h2>
               {mode === "add"
@@ -92,12 +85,9 @@ function TenantForm({
           >
             ×
           </button>
-
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-        >
+        <form onSubmit={handleSubmit}>
 
           <div className="form-grid">
 
@@ -109,9 +99,7 @@ function TenantForm({
               <input
                 value={name}
                 onChange={(event) =>
-                  setName(
-                    event.target.value
-                  )
+                  setName(event.target.value)
                 }
                 required
               />
@@ -126,9 +114,7 @@ function TenantForm({
                 type="email"
                 value={email}
                 onChange={(event) =>
-                  setEmail(
-                    event.target.value
-                  )
+                  setEmail(event.target.value)
                 }
                 required
               />
@@ -142,9 +128,7 @@ function TenantForm({
               <input
                 value={phone}
                 onChange={(event) =>
-                  setPhone(
-                    event.target.value
-                  )
+                  setPhone(event.target.value)
                 }
               />
             </div>
@@ -158,8 +142,7 @@ function TenantForm({
                 value={plan}
                 onChange={(event) =>
                   setPlan(
-                    event.target
-                      .value as TenantPlan
+                    event.target.value as TenantPlan
                   )
                 }
               >
@@ -186,8 +169,7 @@ function TenantForm({
                 value={status}
                 onChange={(event) =>
                   setStatus(
-                    event.target
-                      .value as TenantStatus
+                    event.target.value as TenantStatus
                   )
                 }
               >
@@ -234,9 +216,7 @@ function TenantForm({
           </div>
 
         </form>
-
       </div>
-
     </div>
   );
 }

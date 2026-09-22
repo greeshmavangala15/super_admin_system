@@ -1,6 +1,7 @@
 import type {
   User,
   UserFilters,
+  UserStatus,
 } from "../types/user.types";
 
 const API_URL = "https://dummyjson.com";
@@ -14,64 +15,97 @@ export interface UsersResponse {
 
 const PAGE_SIZE = 10;
 
+function getUserStatus(
+  userId: number
+): UserStatus {
+  if (userId % 3 === 0) {
+    return "suspended";
+  }
+
+  if (userId % 2 === 0) {
+    return "inactive";
+  }
+
+  return "active";
+}
+
 export async function fetchUsers(
   filters: UserFilters,
   signal?: AbortSignal
 ): Promise<UsersResponse> {
-  const { search, role, status, page } = filters;
+  const {
+    search,
+    role,
+    status,
+    page,
+  } = filters;
 
-  const skip = (page - 1) * PAGE_SIZE;
-
-  let url = "";
+  let url: string;
 
   if (search.trim()) {
-    url = `${API_URL}/users/search?q=${encodeURIComponent(
-      search
-    )}&limit=${PAGE_SIZE}&skip=${skip}`;
-  } else if (role) {
-    url = `${API_URL}/users/filter?key=role&value=${encodeURIComponent(
-      role
-    )}&limit=${PAGE_SIZE}&skip=${skip}`;
+    url =
+      `${API_URL}/users/search` +
+      `?q=${encodeURIComponent(search)}` +
+      `&limit=0`;
   } else {
-    url = `${API_URL}/users?limit=${PAGE_SIZE}&skip=${skip}`;
+    url =
+      `${API_URL}/users?limit=0`;
   }
 
-  const response = await fetch(url, {
-    signal,
-  });
+  const response = await fetch(
+    url,
+    { signal }
+  );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch users");
+    throw new Error(
+      "Failed to fetch users"
+    );
   }
 
-  const data: UsersResponse = await response.json();
+  const data: UsersResponse =
+    await response.json();
 
-  // Add status because DummyJSON users do not have a status field
-  const usersWithStatus = data.users.map((user) => ({
-    ...user,
-    status:
-      user.id % 3 === 0
-        ? "suspended"
-        : user.id % 2 === 0
-        ? "inactive"
-        : "active",
-  }));
+  let users = data.users.map(
+    (user): User => ({
+      ...user,
+      status: getUserStatus(user.id),
+    })
+  );
 
-  // Apply status filter after calculating status
-  const filteredUsers = status
-    ? usersWithStatus.filter(
-        (user) => user.status === status
-      )
-    : usersWithStatus;
+  if (role) {
+    users = users.filter(
+      (user) =>
+        user.role === role
+    );
+  }
+
+  if (status) {
+    users = users.filter(
+      (user) =>
+        user.status === status
+    );
+  }
+
+  const total = users.length;
+
+  const skip =
+    (page - 1) * PAGE_SIZE;
+
+  const paginatedUsers =
+    users.slice(
+      skip,
+      skip + PAGE_SIZE
+    );
 
   return {
-    ...data,
-    users: filteredUsers,
-    total: status
-      ? filteredUsers.length
-      : data.total,
+    users: paginatedUsers,
+    total,
+    skip,
+    limit: PAGE_SIZE,
   };
 }
+
 export async function fetchUserById(
   userId: number,
   signal?: AbortSignal
@@ -82,32 +116,33 @@ export async function fetchUserById(
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch user");
+    throw new Error(
+      "Failed to fetch user"
+    );
   }
 
-  const user = await response.json();
+  const user =
+    await response.json();
 
   return {
     ...user,
-    status:
-      user.id % 3 === 0
-        ? "suspended"
-        : user.id % 2 === 0
-        ? "inactive"
-        : "active",
+    status: getUserStatus(
+      user.id
+    ),
   };
 }
 
 export async function updateUserStatus(
   userId: number,
-  status: string
+  status: UserStatus
 ): Promise<User> {
   const response = await fetch(
     `${API_URL}/users/${userId}`,
     {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":
+          "application/json",
       },
       body: JSON.stringify({
         status,
@@ -116,10 +151,18 @@ export async function updateUserStatus(
   );
 
   if (!response.ok) {
-    throw new Error("Failed to update user status");
+    throw new Error(
+      "Failed to update user status"
+    );
   }
 
-  return response.json();
+  const user =
+    await response.json();
+
+  return {
+    ...user,
+    status,
+  };
 }
 
 export async function createUser(
@@ -130,17 +173,28 @@ export async function createUser(
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":
+          "application/json",
       },
       body: JSON.stringify(user),
     }
   );
 
   if (!response.ok) {
-    throw new Error("Failed to create user");
+    throw new Error(
+      "Failed to create user"
+    );
   }
 
-  return response.json();
+  const createdUser =
+    await response.json();
+
+  return {
+    ...createdUser,
+    status:
+      createdUser.status ??
+      "active",
+  };
 }
 
 export async function updateUser(
@@ -152,17 +206,28 @@ export async function updateUser(
     {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":
+          "application/json",
       },
       body: JSON.stringify(user),
     }
   );
 
   if (!response.ok) {
-    throw new Error("Failed to update user");
+    throw new Error(
+      "Failed to update user"
+    );
   }
 
-  return response.json();
+  const updatedUser =
+    await response.json();
+
+  return {
+    ...updatedUser,
+    status:
+      updatedUser.status ??
+      getUserStatus(userId),
+  };
 }
 
 export async function deleteUser(
@@ -176,6 +241,8 @@ export async function deleteUser(
   );
 
   if (!response.ok) {
-    throw new Error("Failed to delete user");
+    throw new Error(
+      "Failed to delete user"
+    );
   }
 }

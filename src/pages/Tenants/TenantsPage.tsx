@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   useQuery,
@@ -31,8 +31,7 @@ import {
 } from "../../queries/tenantQueries";
 
 function TenantsPage() {
-  const queryClient =
-    useQueryClient();
+  const queryClient = useQueryClient();
 
   const [search, setSearch] =
     useState("");
@@ -47,47 +46,54 @@ function TenantsPage() {
     useState(1);
 
   const debouncedSearch =
-    useDebounce(
-      search,
-      500
+    useDebounce(search, 500);
+
+  const [showForm, setShowForm] =
+    useState(false);
+
+  const [editingTenant, setEditingTenant] =
+    useState<Tenant | undefined>(
+      undefined
     );
 
+  const createMutation =
+    useCreateTenant();
 
-    const [showForm, setShowForm] =
-  useState(false);
+  const updateMutation =
+    useUpdateTenant();
 
-const [editingTenant, setEditingTenant] =
-  useState<Tenant | undefined>(
-    undefined
+  const deleteMutation =
+    useDeleteTenant();
+
+  const tenantsQuery = useQuery(
+    tenantsQueryOptions({
+      search: debouncedSearch,
+      status,
+      plan,
+      page,
+    })
   );
 
-const createMutation =
-  useCreateTenant();
-
-const updateMutation =
-  useUpdateTenant();
-
-const deleteMutation =
-  useDeleteTenant();
-
-  useEffect(() => {
+  const handleSearchChange = (
+    value: string
+  ) => {
+    setSearch(value);
     setPage(1);
-  }, [
-    debouncedSearch,
-    status,
-    plan,
-  ]);
+  };
 
-  const tenantsQuery =
-    useQuery(
-      tenantsQueryOptions({
-        search:
-          debouncedSearch,
-        status,
-        plan,
-        page,
-      })
-    );
+  const handleStatusChange = (
+    value: string
+  ) => {
+    setStatus(value);
+    setPage(1);
+  };
+
+  const handlePlanChange = (
+    value: string
+  ) => {
+    setPlan(value);
+    setPage(1);
+  };
 
   const handleTenantHover = (
     tenantId: number
@@ -107,60 +113,57 @@ const deleteMutation =
   };
 
   const handleCreateTenant = (
-  data: Partial<Tenant>
-) => {
-  createMutation.mutate(data, {
-    onSuccess: () => {
-      setShowForm(false);
-    },
-  });
-};
-
-const handleEditTenant = (
-  tenant: Tenant
-) => {
-  setEditingTenant(tenant);
-};
-
-const handleUpdateTenant = (
-  data: Partial<Tenant>
-) => {
-  if (!editingTenant) {
-    return;
-  }
-
-  updateMutation.mutate(
-    {
-      tenantId:
-        editingTenant.id,
-      tenant: data,
-    },
-    {
+    data: Partial<Tenant>
+  ) => {
+    createMutation.mutate(data, {
       onSuccess: () => {
-        setEditingTenant(
-          undefined
-        );
+        setShowForm(false);
       },
+    });
+  };
+
+  const handleEditTenant = (
+    tenant: Tenant
+  ) => {
+    setEditingTenant(tenant);
+  };
+
+  const handleUpdateTenant = (
+    data: Partial<Tenant>
+  ) => {
+    if (!editingTenant) {
+      return;
     }
-  );
-};
 
-const handleDeleteTenant = (
-  tenantId: number
-) => {
-  const confirmed =
-    window.confirm(
-      "Are you sure you want to delete this tenant?"
+    updateMutation.mutate(
+      {
+        tenantId: editingTenant.id,
+        tenant: data,
+      },
+      {
+        onSuccess: () => {
+          setEditingTenant(undefined);
+        },
+      }
     );
+  };
 
-  if (!confirmed) {
-    return;
-  }
+  const handleDeleteTenant = (
+    tenantId: number
+  ) => {
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this tenant?"
+      );
 
-  deleteMutation.mutate(
-    tenantId
-  );
-};
+    if (!confirmed) {
+      return;
+    }
+
+    deleteMutation.mutate(
+      tenantId
+    );
+  };
 
   if (tenantsQuery.isLoading) {
     return (
@@ -179,12 +182,13 @@ const handleDeleteTenant = (
     );
   }
 
-  const data =
-    tenantsQuery.data;
+  const data = tenantsQuery.data;
 
   if (!data) {
     return (
-      <EmptyState message="No tenant data available." />
+      <EmptyState
+        message="No tenant data available."
+      />
     );
   }
 
@@ -193,42 +197,47 @@ const handleDeleteTenant = (
 
       <div className="page-header">
 
-  <div>
-    <h1>Tenants</h1>
+        <div>
+          <h1>Tenants</h1>
 
-    <p>
-      Manage system tenants.
-    </p>
-  </div>
+          <p>
+            Manage system tenants.
+          </p>
+        </div>
 
-  <div className="header-actions">
+        <div className="header-actions">
 
-    {tenantsQuery.isFetching && (
-      <span className="updating-text">
-        Updating...
-      </span>
-    )}
+          {tenantsQuery.isFetching && (
+            <span className="updating-text">
+              Updating...
+            </span>
+          )}
 
-    <button
-      className="add-user-button"
-      onClick={() =>
-        setShowForm(true)
-      }
-    >
-      + Add Tenant
-    </button>
+          <button
+            className="add-user-button"
+            onClick={() =>
+              setShowForm(true)
+            }
+          >
+            + Add Tenant
+          </button>
 
-  </div>
-
-</div>
+        </div>
+      </div>
 
       <TenantFilters
         search={search}
         status={status}
         plan={plan}
-        onSearchChange={setSearch}
-        onStatusChange={setStatus}
-        onPlanChange={setPlan}
+        onSearchChange={
+          handleSearchChange
+        }
+        onStatusChange={
+          handleStatusChange
+        }
+        onPlanChange={
+          handlePlanChange
+        }
         onReset={handleReset}
       />
 
@@ -239,73 +248,74 @@ const handleDeleteTenant = (
       ) : (
         <>
           <TenantTable
-  tenants={data.tenants}
-  onTenantHover={
-    handleTenantHover
-  }
-  onEdit={handleEditTenant}
-  onDelete={
-    handleDeleteTenant
-  }
-/>
+            tenants={data.tenants}
+            onTenantHover={
+              handleTenantHover
+            }
+            onEdit={
+              handleEditTenant
+            }
+            onDelete={
+              handleDeleteTenant
+            }
+          />
 
           <Pagination
             page={page}
-            totalPages={
-              data.pageCount
-            }
+            totalPages={data.pageCount}
             onPageChange={setPage}
           />
         </>
       )}
 
-
       {showForm && (
-  <TenantForm
-    mode="add"
-    isPending={
-      createMutation.isPending
-    }
-    error={
-      createMutation.error?.message
-    }
-    onSubmit={
-      handleCreateTenant
-    }
-    onClose={() => {
-      if (
-        !createMutation.isPending
-      ) {
-        setShowForm(false);
-      }
-    }}
-  />
-)}
+        <TenantForm
+          key="add-tenant"
+          mode="add"
+          isPending={
+            createMutation.isPending
+          }
+          error={
+            createMutation.error?.message
+          }
+          onSubmit={
+            handleCreateTenant
+          }
+          onClose={() => {
+            if (
+              !createMutation.isPending
+            ) {
+              setShowForm(false);
+            }
+          }}
+        />
+      )}
 
-{editingTenant && (
-  <TenantForm
-    mode="edit"
-    tenant={editingTenant}
-    isPending={
-      updateMutation.isPending
-    }
-    error={
-      updateMutation.error?.message
-    }
-    onSubmit={
-      handleUpdateTenant
-    }
-    onClose={() => {
-      if (
-        !updateMutation.isPending
-      ) {
-        setEditingTenant(
-          undefined
-        );
-      }
-    }}
-  />
-)}
+      {editingTenant && (
+        <TenantForm
+          key={editingTenant.id}
+          mode="edit"
+          tenant={editingTenant}
+          isPending={
+            updateMutation.isPending
+          }
+          error={
+            updateMutation.error?.message
+          }
+          onSubmit={
+            handleUpdateTenant
+          }
+          onClose={() => {
+            if (
+              !updateMutation.isPending
+            ) {
+              setEditingTenant(
+                undefined
+              );
+            }
+          }}
+        />
+      )}
 
     </main>
   );

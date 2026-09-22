@@ -48,29 +48,35 @@ export interface User {
   height: number;
   weight: number;
   eyeColor: string;
+
   hair: {
     color: string;
     type: string;
   };
+
   ip: string;
   address: UserAddress;
   macAddress: string;
   university: string;
   bank: UserBank;
+
   company: UserCompany;
+
   ein: string;
   ssn: string;
   userAgent: string;
+
   crypto: {
     coin: string;
     wallet: string;
     network: string;
   };
+
   role: UserRole;
   status: UserStatus;
 }
 
-export interface UserDetails extends User {}
+export type UserDetails = User;
 
 export interface UserFilters {
   search: string;
