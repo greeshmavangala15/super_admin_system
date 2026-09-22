@@ -85,8 +85,7 @@ function InfiniteUsersPage() {
           <h1>Infinite Users</h1>
 
           <p>
-            Load users continuously using
-            TanStack Query's infinite query.
+            Load users continuously
           </p>
         </div>
 
